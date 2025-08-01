@@ -14,8 +14,8 @@ warnings.filterwarnings('ignore')
 # 全局配置 (V31 AI特征学习版)
 # ==============================================================================
 # 上海+深圳数据路径
-SHANGHAI_DATA_PATH = '/Users/yamijin/Desktop/A股主板历史数据_2018至今_20250729_233546/上海主板_历史数据_2018至今_20250729_233546.csv'
-SHENZHEN_DATA_PATH = '/Users/yamijin/Desktop/A股主板历史数据_2018至今_20250729_233546/深圳主板_历史数据_2018至今_20250729_233546.csv'
+SHANGHAI_DATA_PATH = '上海主板_历史数据_2018至今_20250729_233546_副本2.csv'
+SHENZHEN_DATA_PATH = '深圳主板_历史数据_2018至今_20250729_233546_副本.csv'
 
 OUTPUT_MODEL_PATH = 'V31_AI_Feature_Model.pkl'
 OUTPUT_SCALER_PATH = 'V31_AI_Feature_Scaler.pkl'
