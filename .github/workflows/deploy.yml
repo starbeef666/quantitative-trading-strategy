@@ -53,7 +53,7 @@ jobs:
         echo "📦 分支: ${{ github.ref }}" >> deployment_report.md
     
     - name: 📤 上传部署报告
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: deployment-report
         path: deployment_report.md
