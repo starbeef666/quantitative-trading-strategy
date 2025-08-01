@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-简化策略测试 - 计算深圳和上海收益率
+策略收益率分析 - 详细分析深圳和上海的收益率
 """
 
 import csv
@@ -9,16 +9,15 @@ from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
 
-class SimpleStrategyTest:
+class StrategyAnalyzer:
     def __init__(self):
-        """初始化策略"""
+        """初始化分析器"""
         self.entry_price = None
         self.remaining_shares = 1.0
         self.total_pnl = 0.0
         self.prev_close = None
         self.is_first_drop = True
         self.stop_loss_price = None
-        self.trades = []
         
     def load_data(self, file_path):
         """加载数据"""
@@ -201,42 +200,82 @@ class SimpleStrategyTest:
         
         return None
     
-    def evaluate_features(self, features, stock_data):
-        """评估特征组合的收益率"""
-        print("开始评估特征组合...")
+    def analyze_results(self, results):
+        """详细分析结果"""
+        if not results:
+            print("没有交易结果可分析")
+            return
         
-        results = []
-        for signal in features:
-            try:
-                result = self.backtest_signal(stock_data, signal)
-                if result:
-                    results.append(result)
-            except Exception as e:
-                print(f"回测信号时出错: {e}")
-                continue
+        # 总体统计
+        total_trades = len(results)
+        total_pnl = sum(r['pnl'] for r in results)
+        avg_pnl = total_pnl / total_trades
+        win_trades = [r for r in results if r['pnl'] > 0]
+        lose_trades = [r for r in results if r['pnl'] < 0]
+        win_rate = len(win_trades) / total_trades
         
-        if len(results) > 0:
-            # 按收益率排序
-            results.sort(key=lambda x: x['pnl'], reverse=True)
-            
-            print(f"回测完成，共 {len(results):,} 个交易")
-            avg_pnl = sum(r['pnl'] for r in results) / len(results)
-            print(f"平均收益率: {avg_pnl:.4f}")
-            win_count = sum(1 for r in results if r['pnl'] > 0)
-            win_rate = win_count / len(results)
-            print(f"胜率: {win_rate:.2%}")
-            max_pnl = max(r['pnl'] for r in results)
-            min_pnl = min(r['pnl'] for r in results)
-            print(f"最高收益率: {max_pnl:.4f}")
-            print(f"最低收益率: {min_pnl:.4f}")
+        print("\n" + "=" * 80)
+        print("策略收益率详细分析")
+        print("=" * 80)
         
-        return results
+        print(f"总体统计:")
+        print(f"  总交易次数: {total_trades:,}")
+        print(f"  总收益率: {total_pnl:.4f}")
+        print(f"  平均收益率: {avg_pnl:.4f}")
+        print(f"  胜率: {win_rate:.2%}")
+        print(f"  盈利交易: {len(win_trades):,}")
+        print(f"  亏损交易: {len(lose_trades):,}")
+        
+        if win_trades:
+            avg_win = sum(r['pnl'] for r in win_trades) / len(win_trades)
+            max_win = max(r['pnl'] for r in win_trades)
+            print(f"  平均盈利: {avg_win:.4f}")
+            print(f"  最大盈利: {max_win:.4f}")
+        
+        if lose_trades:
+            avg_loss = sum(r['pnl'] for r in lose_trades) / len(lose_trades)
+            max_loss = min(r['pnl'] for r in lose_trades)
+            print(f"  平均亏损: {avg_loss:.4f}")
+            print(f"  最大亏损: {max_loss:.4f}")
+        
+        # 按退出原因分析
+        exit_reasons = {}
+        for r in results:
+            reason = r['exit_reason']
+            if reason not in exit_reasons:
+                exit_reasons[reason] = []
+            exit_reasons[reason].append(r)
+        
+        print(f"\n退出原因分析:")
+        for reason, trades in exit_reasons.items():
+            avg_pnl_reason = sum(r['pnl'] for r in trades) / len(trades)
+            win_rate_reason = sum(1 for r in trades if r['pnl'] > 0) / len(trades)
+            print(f"  {reason}: {len(trades):,} 次, 平均收益率 {avg_pnl_reason:.4f}, 胜率 {win_rate_reason:.2%}")
+        
+        # 按持有天数分析
+        holding_days = [r['holding_days'] for r in results]
+        avg_holding = sum(holding_days) / len(holding_days)
+        max_holding = max(holding_days)
+        min_holding = min(holding_days)
+        print(f"\n持有天数分析:")
+        print(f"  平均持有天数: {avg_holding:.1f}")
+        print(f"  最长持有天数: {max_holding}")
+        print(f"  最短持有天数: {min_holding}")
+        
+        return {
+            'total_trades': total_trades,
+            'total_pnl': total_pnl,
+            'avg_pnl': avg_pnl,
+            'win_rate': win_rate,
+            'win_trades': len(win_trades),
+            'lose_trades': len(lose_trades)
+        }
     
-    def run_strategy(self, shanghai_file, shenzhen_file):
-        """运行完整策略"""
-        print("=" * 60)
-        print("简化策略测试 - 计算深圳和上海收益率")
-        print("=" * 60)
+    def run_analysis(self, shanghai_file, shenzhen_file):
+        """运行完整分析"""
+        print("=" * 80)
+        print("策略收益率分析")
+        print("=" * 80)
         
         # 加载数据
         shanghai_data = self.load_data(shanghai_file)
@@ -253,65 +292,74 @@ class SimpleStrategyTest:
         # 提取特征
         features = self.extract_features(all_data)
         
-        # 评估特征
-        results = self.evaluate_features(features, all_data)
+        # 回测所有信号
+        print("开始回测...")
+        results = []
+        for signal in features:
+            try:
+                result = self.backtest_signal(all_data, signal)
+                if result:
+                    results.append(result)
+            except Exception as e:
+                continue
         
-        # 分别计算上海和深圳的收益率
+        print(f"回测完成，共 {len(results):,} 个交易")
+        
+        # 分别分析上海和深圳
         shanghai_results = []
         shenzhen_results = []
         
         for result in results:
             ts_code = result['ts_code']
-            if ts_code.startswith('00'):  # 深圳股票代码
-                shenzhen_results.append(result)
-            elif ts_code.startswith('60'):  # 上海股票代码
+            if ts_code.startswith('60'):  # 上海股票代码
                 shanghai_results.append(result)
+            elif ts_code.startswith('00'):  # 深圳股票代码
+                shenzhen_results.append(result)
         
-        print("\n" + "=" * 60)
-        print("分市场收益率统计")
-        print("=" * 60)
+        # 总体分析
+        print("\n总体分析:")
+        overall_stats = self.analyze_results(results)
         
-        # 上海市场统计
+        # 上海市场分析
+        print(f"\n上海市场分析:")
         if shanghai_results:
-            shanghai_avg = sum(r['pnl'] for r in shanghai_results) / len(shanghai_results)
-            shanghai_win_rate = sum(1 for r in shanghai_results if r['pnl'] > 0) / len(shanghai_results)
-            print(f"上海市场:")
-            print(f"  交易次数: {len(shanghai_results):,}")
-            print(f"  平均收益率: {shanghai_avg:.4f}")
-            print(f"  胜率: {shanghai_win_rate:.2%}")
-            print(f"  最高收益率: {max(r['pnl'] for r in shanghai_results):.4f}")
-            print(f"  最低收益率: {min(r['pnl'] for r in shanghai_results):.4f}")
+            shanghai_stats = self.analyze_results(shanghai_results)
         else:
-            print("上海市场: 无交易信号")
+            print("  无交易信号")
         
-        print()
-        
-        # 深圳市场统计
+        # 深圳市场分析
+        print(f"\n深圳市场分析:")
         if shenzhen_results:
-            shenzhen_avg = sum(r['pnl'] for r in shenzhen_results) / len(shenzhen_results)
-            shenzhen_win_rate = sum(1 for r in shenzhen_results if r['pnl'] > 0) / len(shenzhen_results)
-            print(f"深圳市场:")
-            print(f"  交易次数: {len(shenzhen_results):,}")
-            print(f"  平均收益率: {shenzhen_avg:.4f}")
-            print(f"  胜率: {shenzhen_win_rate:.2%}")
-            print(f"  最高收益率: {max(r['pnl'] for r in shenzhen_results):.4f}")
-            print(f"  最低收益率: {min(r['pnl'] for r in shenzhen_results):.4f}")
+            shenzhen_stats = self.analyze_results(shenzhen_results)
         else:
-            print("深圳市场: 无交易信号")
+            print("  无交易信号")
+        
+        # 保存详细结果
+        if results:
+            with open('策略分析结果.csv', 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(['ts_code', 'entry_date', 'exit_date', 'entry_price', 'exit_price', 'pnl', 'exit_reason', 'holding_days'])
+                for result in results:
+                    writer.writerow([
+                        result['ts_code'], result['entry_date'], result['exit_date'],
+                        result['entry_price'], result['exit_price'], result['pnl'],
+                        result['exit_reason'], result['holding_days']
+                    ])
+            print(f"\n详细结果已保存到: 策略分析结果.csv")
         
         return results
 
 def main():
     """主函数"""
-    strategy = SimpleStrategyTest()
+    analyzer = StrategyAnalyzer()
     
-    # 运行策略
-    results = strategy.run_strategy(
+    # 运行分析
+    results = analyzer.run_analysis(
         '上海测试数据.csv',
         '深圳测试数据.csv'
     )
     
-    print("\n策略运行完成！")
+    print("\n分析完成！")
 
 if __name__ == "__main__":
     main()
