@@ -1,0 +1,34 @@
+# 这些是支持的资金平台。GitHub将在您的个人资料上显示一个"赞助"按钮，并链接到这里。
+
+# 有关更多信息，请访问 https://docs.github.com/en/github/administering-a-repository/managing-repository-settings/displaying-a-sponsor-button-in-your-repository
+
+# 您可以使用以下平台：
+# - github: 用户名或组织名称
+# - patreon: 用户名或组织名称
+# - opencollective: 用户名或组织名称
+# - ko_fi: 用户名或组织名称
+# - tidelift: 用户名或组织名称
+# - community_bridge: 用户名或组织名称
+# - liberapay: 用户名或组织名称
+# - issuehunt: 用户名或组织名称
+# - otechie: 用户名或组织名称
+# - custom: 自定义URL
+
+# 示例：
+# github: [用户名]
+# patreon: [用户名]
+# opencollective: [用户名]
+# ko_fi: [用户名]
+# tidelift: [用户名]
+# community_bridge: [用户名]
+# liberapay: [用户名]
+# issuehunt: [用户名]
+# otechie: [用户名]
+# custom: https://www.paypal.me/[用户名]
+
+# 取消注释并修改以下行以启用赞助：
+# github: [您的GitHub用户名]
+# patreon: [您的Patreon用户名]
+# opencollective: [您的OpenCollective用户名]
+# ko_fi: [您的Ko-fi用户名]
+# custom: https://www.paypal.me/[您的PayPal用户名] 

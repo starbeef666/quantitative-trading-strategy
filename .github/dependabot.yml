@@ -1,0 +1,64 @@
+# 要了解如何为Dependabot配置此文件，请访问 https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  # 启用Python依赖更新
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "yamijin"
+    assignees:
+      - "yamijin"
+    commit-message:
+      prefix: "📦"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "python"
+    ignore:
+      # 忽略主要版本更新
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # 启用GitHub Actions更新
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "yamijin"
+    assignees:
+      - "yamijin"
+    commit-message:
+      prefix: "🔧"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # 启用Docker更新（如果有Dockerfile）
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "yamijin"
+    assignees:
+      - "yamijin"
+    commit-message:
+      prefix: "🐳"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker" 

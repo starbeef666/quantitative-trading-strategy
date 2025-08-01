@@ -1,0 +1,50 @@
+# 核心数据处理
+pandas>=1.5.0
+numpy>=1.21.0
+
+# 机器学习
+scikit-learn>=1.1.0
+lightgbm>=3.3.0
+xgboost>=1.6.0
+
+# 模型保存和加载
+joblib>=1.2.0
+
+# 数据可视化 (可选)
+matplotlib>=3.5.0
+seaborn>=0.11.0
+plotly>=5.10.0
+
+# 进度条
+tqdm>=4.64.0
+
+# 警告控制
+warnings
+
+# 时间处理
+datetime
+
+# 文件操作
+pathlib
+
+# 数学计算
+scipy>=1.9.0
+
+# 统计计算
+statsmodels>=0.13.0
+
+# 并行计算 (可选)
+multiprocessing
+
+# 配置管理 (可选)
+configparser
+
+# 日志记录 (可选)
+logging
+
+# 测试框架 (可选)
+pytest>=7.0.0
+
+# 代码格式化 (可选)
+black>=22.0.0
+flake8>=5.0.0 

@@ -1,0 +1,118 @@
+name: 🚀 自动部署
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: 🐍 设置Python环境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: 📦 安装依赖
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: 🔍 代码质量检查
+      run: |
+        echo "检查Python文件语法..."
+        python -m py_compile *.py
+        echo "✅ 语法检查通过"
+    
+    - name: 📊 运行测试
+      run: |
+        echo "运行基本测试..."
+        python -c "import pandas as pd; import numpy as np; print('✅ 依赖包导入成功')"
+        echo "✅ 基本测试通过"
+    
+    - name: 📝 生成部署报告
+      run: |
+        echo "📋 部署报告" > deployment_report.md
+        echo "==========" >> deployment_report.md
+        echo "" >> deployment_report.md
+        echo "✅ 代码质量检查: 通过" >> deployment_report.md
+        echo "✅ 依赖包安装: 成功" >> deployment_report.md
+        echo "✅ 基本测试: 通过" >> deployment_report.md
+        echo "" >> deployment_report.md
+        echo "📅 部署时间: $(date)" >> deployment_report.md
+        echo "🔗 仓库: ${{ github.repository }}" >> deployment_report.md
+        echo "📦 分支: ${{ github.ref }}" >> deployment_report.md
+    
+    - name: 📤 上传部署报告
+      uses: actions/upload-artifact@v3
+      with:
+        name: deployment-report
+        path: deployment_report.md
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: 🐍 设置Python环境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: 📦 安装依赖
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: 🚀 部署到GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
+        force_orphan: true
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
+        commit_message: '🚀 自动部署: ${{ github.sha }}'
+    
+    - name: 📊 更新README统计
+      run: |
+        echo "📈 项目统计更新" >> README.md
+        echo "最后更新: $(date)" >> README.md
+        echo "部署状态: ✅ 成功" >> README.md
+
+  notify:
+    needs: [test, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: 📧 通知部署结果
+      run: |
+        if [ "${{ needs.test.result }}" == "success" ] && [ "${{ needs.deploy.result }}" == "success" ]; then
+          echo "🎉 部署成功！"
+          echo "✅ 测试通过"
+          echo "✅ 部署完成"
+        elif [ "${{ needs.test.result }}" == "failure" ]; then
+          echo "❌ 测试失败"
+          echo "请检查代码质量"
+        elif [ "${{ needs.deploy.result }}" == "failure" ]; then
+          echo "⚠️ 测试通过但部署失败"
+          echo "请检查部署配置"
+        fi 
