@@ -18,7 +18,7 @@ jobs:
         lfs: true
     
     - name: 🐍 设置Python环境
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: '3.9'
     
@@ -70,7 +70,7 @@ jobs:
         lfs: true
     
     - name: 🐍 设置Python环境
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: '3.9'
     
